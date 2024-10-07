@@ -33,7 +33,7 @@ def search_documents(self, keyword):
                 return doc
         return None
 
-# Example usage
+# Example for test:
 doc1 = Document(1, "Project Plan", "Detailed project plan", "Confidential", "/docs/project_plan.pdf", "2024-10-05", "Draft", "Initial draft")
 doc2 = Document(2, "Budget Report", "Annual budget report", "Public", "/docs/budget_report.pdf", "2024-09-30", "Final", "Approved by finance")
 
