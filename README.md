@@ -4,3 +4,4 @@ The Family Document Manager System is an application designed to efficiently sto
 # About files & repo folders
 Docs:for documents such as project spec and project ideas.  
 tmp: for keeping temporary files e.g. data files. 
+img: this folders is used for storing images in case  Flask is used.
