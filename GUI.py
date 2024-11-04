@@ -1,4 +1,7 @@
-
+""" my plan of creating this file is to make the code in GUI.py runs 
+the Family-Doc-Sys directly. The main program will start the main
+ window and the program keeps running until we close it. 
+"""
 from tkinter import ttk, messagebox, simpledialog
 from DocumentRepository import DocumentRepository
 from Document import Document
@@ -245,3 +248,4 @@ class DocumentManagementSystemGUI:
             else:
                 messagebox.showerror("Error", "Failed to delete document")
                 #--------------- 
+# ---- Next is search_documents(), my be it's the last method.
