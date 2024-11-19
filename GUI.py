@@ -2,6 +2,7 @@
 the Family-Doc-Sys directly. The main program will start the main
  window and the program keeps running until we close it. 
 """
+import tkinter as tk
 from tkinter import ttk, messagebox, simpledialog
 from DocumentRepository import DocumentRepository
 from Document import Document
@@ -185,7 +186,7 @@ class DocumentManagementSystemGUI:
         documents = self.repo.documents
         choices = [f"{doc.id}: {doc.title}" for doc in documents]
         choice = simpledialog.askstring("Select Document", "Choose a document to update:", initialvalue=choices[0] if choices else "")
-#--------------------------------------------
+ 
         if choice:
             doc_id = choice.split(":")[0]
             document = self.repo.get_document_by_id(doc_id)
@@ -247,5 +248,22 @@ class DocumentManagementSystemGUI:
                 messagebox.showinfo("Success", f"Document '{document.title}' deleted successfully")
             else:
                 messagebox.showerror("Error", "Failed to delete document")
-                #--------------- 
-# ---- Next is search_documents(), my be it's the last method.
+#---------------------------------------------- 
+    def search_documents(self):
+        keyword = self.search_entry.get()
+        results = self.gui_handler.search_documents(keyword)
+
+        self.search_result.delete(1.0, tk.END)
+        if results:
+            for doc in results:
+                self.search_result.insert(tk.END, f"ID: {doc.id}, Title: {doc.title}, Classification: {doc.classification}\n\n")
+        else:
+            self.search_result.insert(tk.END, "No documents found matching the keyword.")
+
+def main():
+    root = tk.Tk()
+    app = DocumentManagementSystemGUI(root)
+    root.mainloop()
+
+if __name__ == "__main__":
+    main()
