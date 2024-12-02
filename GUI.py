@@ -1,4 +1,4 @@
-""" my plan of creating this file is to make the code in GUI.py runs 
+""" My plan of creating this file is to make the code in GUI.py runs 
 the Family-Doc-Sys directly. The main program will start the main
  window and the program keeps running until we close it. 
 """
