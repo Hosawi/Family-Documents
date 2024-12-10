@@ -39,7 +39,7 @@ The Family Document Management System (FDMS) is a desktop application designed t
 
 Run the following command:
 ```bash
-python GUI.py
+python main.py
 ```
 
 ### User Interface
