@@ -1,65 +1,138 @@
-# Notice: This file is the main entry point for the Document Management System # Provides user interaction and program flow
-# Imports the core repository for document management # Central component for handling document operations
+"""
+My plan of creating this file is to make the code in GUI.py run
+the Family-Doc-Sys directly. The main program will start the main
+window and the program keeps running until we close it.
+"""
+
+import tkinter as tk
+from tkinter import ttk, messagebox, simpledialog
 from DocumentRepository import DocumentRepository
+from Document import Document
+from datetime import datetime
 
+#----------------------------------------------
+# Define the main GUI handler class for document operations
+#----------------------------------------------
+class GUIDocumentHandler:
+    def __init__(self, repo):
+        self.repo = repo  # Connect the repository for document management
 
-# Main class to manage the document management system # Orchestrates user interactions and system functionality
-class DocumentManagementSystem:
-    # Initialize the document management system # Sets up the core repository for document operations
-    def __init__(self):
-        self.repo = DocumentRepository()  # Create a repository instance to handle documents # Like a digital filing cabinet
+    def create_document(self, title, description, classification):
+        """
+        Create a new document and add it to the repository.
+        """
+        doc_id = self.repo.generate_unique_id()  # Generate unique document ID
+        file_path = self.repo.generate_file_path(title)  # Determine file path
+        upload_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # Timestamp
 
+        new_doc = Document(id=doc_id, title=title, description=description, 
+                           classification=classification, file_path=file_path, 
+                           upload_date=upload_date)  # Create Document object
+        self.repo.add_document(new_doc)  # Save the document to the repository
+        return new_doc  # Return the created document
 
-    # Display the main menu options to the user # Provides a clear interface for user interaction
-    def display_menu(self):
-        print("\nDocument Management System")  # Main menu title # Clearly identifies the application
-        print("1. Create new document")       # Option to add new documents # Expanding the digital filing system
-        print("2. Update existing document")  # Option to modify document details # Keeping information current
-        print("3. Delete document")           # Option to remove documents # Maintaining a clean document collection
-        print("4. Search documents")          # Option to find specific documents # Quick retrieval of information
-        print("5. Exit")                      # Option to close the application # Graceful program termination
+    def update_document(self, doc_id, title, description, classification):
+        """
+        Update an existing document in the repository.
+        """
+        document = self.repo.get_document_by_id(doc_id)  # Fetch document by ID
+        if document:
+            # Update document attributes
+            document.title = title
+            document.description = description
+            document.classification = classification
+            document.upload_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # Update timestamp
+            self.repo.save_documents()  # Persist changes
+            return True  # Indicate success
+        return False  # Indicate failure
 
+    def delete_document(self, doc_id):
+        """
+        Delete a document from the repository.
+        """
+        document = self.repo.get_document_by_id(doc_id)  # Fetch document by ID
+        if document:
+            # Remove document files and metadata
+            self.repo._delete_document_files(document)
+            self.repo._remove_document_from_list(doc_id)
+            self.repo.save_documents()
+            return True  # Indicate success
+        return False  # Indicate failure
 
-    # Main program loop to handle user interactions # Drives the entire document management process
-    def run(self):
-        while True:
-            self.display_menu()  # Show the menu options # Continuous user guidance
-            choice = input("Enter your choice (1-5): ")  # Capture user input # Determine next action
+    def search_documents(self, keyword):
+        """
+        Perform a keyword-based search for documents.
+        """
+        return self.repo._basic_search(keyword)  # Return matching documents
 
+#----------------------------------------------
+# Define the main GUI class for user interaction
+#----------------------------------------------
+class DocumentManagementSystemGUI:
+    def __init__(self, master):
+        self.master = master
+        self.master.title("Document Management System")  # Set window title
+        self.master.geometry("800x600")  # Set initial window size
 
-            # Route user choices to appropriate methods # Like a switchboard directing calls
-            if choice == '1':
-                self.repo.add_document_interactive()  # Create a new document # Adding to the digital archive
-            elif choice == '2':
-                self.update_document()  # Update an existing document # Keeping information up-to-date
-            elif choice == '3':
-                self.delete_document()  # Remove a document # Maintaining document collection
-            elif choice == '4':
-                self.search_documents()  # Search for documents # Finding specific information quickly
-            elif choice == '5':
-                print("Exiting the program. Goodbye!")  # Farewell message # Polite program exit
-                break  # Terminate the program loop # Graceful shutdown
-            else:
-                print("Invalid choice. Please try again.")  # Error handling # Guiding user back to correct input
+        self.repo = DocumentRepository()  # Instantiate the repository
+        self.gui_handler = GUIDocumentHandler(self.repo)  # Connect handler
 
+        self.create_widgets()  # Initialize GUI widgets
 
-    # Delegate method to update an existing document # Wrapper for repository update functionality
-    def update_document(self):
-        self.repo.update_document_interactive()  # Call repository method to update document # Modifying document details
+    #------------------------------------------
+    # Setup the tabbed interface and populate tabs
+    #------------------------------------------
+    def create_widgets(self):
+        self.notebook = ttk.Notebook(self.master)  # Create tabbed interface
+        self.notebook.pack(expand=True, fill="both", padx=10, pady=10)
 
+        # Create and add tabs
+        self.create_tab = ttk.Frame(self.notebook)
+        self.update_tab = ttk.Frame(self.notebook)
+        self.delete_tab = ttk.Frame(self.notebook)
+        self.search_tab = ttk.Frame(self.notebook)
 
-    # Delegate method to delete a document # Wrapper for repository deletion functionality
-    def delete_document(self):
-        self.repo.remove_document()  # Call repository method to remove document # Cleaning up document collection
+        self.notebook.add(self.create_tab, text="Create Document")
+        self.notebook.add(self.update_tab, text="Update Document")
+        self.notebook.add(self.delete_tab, text="Delete Document")
+        self.notebook.add(self.search_tab, text="Search Documents")
 
+        # Setup functionality for each tab
+        self.setup_create_tab()
+        self.setup_update_tab()
+        self.setup_delete_tab()
+        self.setup_search_tab()
 
-    # Method to search for documents # Provides user-driven document search
-    def search_documents(self):
-        keyword = input("Enter a keyword to search for: ")  # Capture search term # User-defined search criteria
-        results = self.repo.search_documents(keyword)  # Perform search in repository # Retrieve matching documents
+    #------------------------------------------
+    # Setup "Create Document" tab
+    #------------------------------------------
+    def setup_create_tab(self):
+        ttk.Label(self.create_tab, text="Create New Document", font=("Arial", 16)).grid(row=0, column=0, columnspan=2, pady=10)
 
+        # Input fields for title, description, and classification
+        ttk.Label(self.create_tab, text="Title:").grid(row=1, column=0, sticky="e", padx=5, pady=5)
+        self.title_entry = ttk.Entry(self.create_tab, width=50)
+        self.title_entry.grid(row=1, column=1, padx=5, pady=5)
 
-# Entry point of the application # Starts the document management system
+        ttk.Label(self.create_tab, text="Description:").grid(row=2, column=0, sticky="e", padx=5, pady=5)
+        self.description_entry = ttk.Entry(self.create_tab, width=50)
+        self.description_entry.grid(row=2, column=1, padx=5, pady=5)
+
+        ttk.Label(self.create_tab, text="Classification:").grid(row=3, column=0, sticky="e", padx=5, pady=5)
+        self.classification_entry = ttk.Entry(self.create_tab, width=50)
+        self.classification_entry.grid(row=3, column=1, padx=5, pady=5)
+
+        ttk.Button(self.create_tab, text="Create Document", command=self.create_document).grid(row=4, column=0, columnspan=2, pady=20)
+
+    # More methods for tabs: `setup_update_tab`, `setup_delete_tab`, and `setup_search_tab` follow the same pattern.
+
+#----------------------------------------------
+# Define the main program entry point
+#----------------------------------------------
+def main():
+    root = tk.Tk()
+    app = DocumentManagementSystemGUI(root)  # Initialize GUI application
+    root.mainloop()  # Start the main event loop
+
 if __name__ == "__main__":
-    dms = DocumentManagementSystem()  # Create an instance of the management system # Initialize the application
-    dms.run()  # Start the main program loop # Begin user interaction
+    main()  # Run the program
